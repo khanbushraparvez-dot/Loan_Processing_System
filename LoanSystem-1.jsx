@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-// ─── THEME ───────────────────────────────────────────────────────────────────
+// ─── THEME───────────────────────────────────────────────────────────────────
 const C = {
   dark: "#1a1f2e", darker: "#141824", gold: "#c9a84c", goldLight: "#e0c068",
   goldBg: "#c9a84c22", green: "#22c55e", greenBg: "#22c55e18", amber: "#f59e0b",
