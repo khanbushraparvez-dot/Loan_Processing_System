@@ -560,11 +560,43 @@ function LoginPage({ onLogin }) {
     finally{setLoading(false);}
   };
 
-  const knownVendorAdmin = email.trim().length > 0;
   const startLogin = async () => {
-    if (knownVendorAdmin) return sendVendorAdminOtp();
-    return doStandardLogin();
-  };
+  setError("");
+  const e = email.trim().toLowerCase();
+
+  if (!e) {
+    setError("Please enter your official email address.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, role, approved, active, email")
+      .eq("email", e)
+      .maybeSingle();
+
+    if (profileError) {
+      setError(profileError.message);
+      return;
+    }
+
+    if (
+      profile &&
+      profile.role === "Vendor Admin" &&
+      profile.approved === true &&
+      profile.active === true
+    ) {
+      return await sendVendorAdminOtp();
+    }
+
+    return await doStandardLogin();
+  } finally {
+    setLoading(false);
+  }
+};
 
   const doStandardLogin = async () => {
     setError(""); const e=email.trim().toLowerCase();
