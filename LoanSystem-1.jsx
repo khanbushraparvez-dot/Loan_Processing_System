@@ -560,7 +560,7 @@ function LoginPage({ onLogin }) {
     finally{setLoading(false);}
   };
 
-  const knownVendorAdmin = !!DB.get("users").find(u=>u.email?.toLowerCase()===email.trim().toLowerCase() && u.role==="Vendor Admin");
+  const knownVendorAdmin = email.trim().length > 0;
   const startLogin = async () => {
     if (knownVendorAdmin) return sendVendorAdminOtp();
     return doStandardLogin();
