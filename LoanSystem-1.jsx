@@ -538,18 +538,45 @@ function LoginPage({ onLogin }) {
     setVendorStep("email"); setOtp(""); setOtpToken(""); setLoading(false);
   };
 
-  const sendVendorAdminOtp = async () => {
-    setError("");
-    const e=email.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(e)) { setError("Please enter a valid official email address."); return; }
-    const user=DB.get("users").find(u=>u.email?.toLowerCase()===e && u.active && u.approved===true);
-    if(!user){ setError("No approved account found for this email."); return; }
-    if(user.role!=="Vendor Admin"){ setError("This email is not registered as a Vendor Admin. Use email and password login."); return; }
-    setLoading(true);
-    try { const token=await requestEmailOtp(e,"vendor-admin-login"); setOtpToken(token); setOtp(""); setVendorStep("otp"); }
-    catch(err) { setError(err.message); }
-    finally { setLoading(false); }
-  };
+const sendVendorAdminOtp = async () => {
+  setError("");
+  const e = email.trim().toLowerCase();
+
+  if (!/^\S+@\S+\.\S+$/.test(e)) {
+    setError("Please enter a valid official email address.");
+    return;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, email, role, approved, active")
+    .eq("email", e)
+    .eq("role", "Vendor Admin")
+    .maybeSingle();
+
+  if (profileError) {
+    setError(profileError.message);
+    return;
+  }
+
+  if (!profile || profile.approved !== true || profile.active !== true) {
+    setError("No approved Vendor Admin account found for this email.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const token = await requestEmailOtp(e, "vendor-admin-login");
+    setOtpToken(token);
+    setOtp("");
+    setVendorStep("otp");
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const verifyVendorAdminOtp = async () => {
     setError("");
